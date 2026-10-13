@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Bestands-Check</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f3f5f4; --sheet:#ffffff; --ink:#1d2a2f; --soft:#55646b; --line:#d6dddc;
+  --oak:#a8742f;
+  --red:#b3261e; --red-bg:#fbe9e7;
+  --amber:#8a5d00; --amber-bg:#fdf1d2;
+  --blue:#1f5a99; --blue-bg:#e4eefa;
+  --ok:#2f6b3f; --ok-bg:#e6f2e8;
+  --focus:#1f5a99;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141b1e; --sheet:#1c2529; --ink:#e8eeee; --soft:#a4b2b6; --line:#33424a;
+    --oak:#d8a35e;
+    --red:#ff8a80; --red-bg:#3a1e1c; --amber:#f2c35b; --amber-bg:#352a12;
+    --blue:#8ab8f0; --blue-bg:#16283d; --ok:#8fd19e; --ok-bg:#16301d; --focus:#8ab8f0;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141b1e; --sheet:#1c2529; --ink:#e8eeee; --soft:#a4b2b6; --line:#33424a;
+  --oak:#d8a35e; --red:#ff8a80; --red-bg:#3a1e1c; --amber:#f2c35b; --amber-bg:#352a12;
+  --blue:#8ab8f0; --blue-bg:#16283d; --ok:#8fd19e; --ok-bg:#16301d; --focus:#8ab8f0;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Atkinson Hyperlegible",Verdana,sans-serif;font-size:17px;line-height:1.5;font-variant-numeric:tabular-nums}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:24px 16px 64px}
+header.top{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 24px;border-bottom:3px solid var(--oak);padding-bottom:12px;margin-bottom:24px}
+header.top h1{margin:0;font-size:30px;line-height:1.15}
+header.top p{margin:0;color:var(--soft)}
+button,.btn{font:inherit;font-weight:700;border:2px solid var(--ink);background:var(--sheet);color:var(--ink);border-radius:8px;padding:8px 16px;cursor:pointer}
+button.primary{background:var(--ink);color:var(--sheet)}
+button:hover{filter:brightness(.95)}
+.drop{background:var(--sheet);border:3px dashed var(--line);border-radius:14px;padding:48px 24px;text-align:center}
+.drop.over{border-color:var(--oak);background:color-mix(in srgb,var(--oak) 8%,var(--sheet))}
+.drop h2{margin:0 0 8px;font-size:26px}
+.drop p{margin:0 auto 20px;max-width:58ch;color:var(--soft)}
+.howto{margin-top:24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.howto div{background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:16px 18px}
+.howto b{display:block;margin-bottom:4px}
+.howto span{color:var(--soft)}
+.note{color:var(--soft);font-size:15px;margin-top:16px}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:0 0 16px}
+.bar .meta{color:var(--soft)}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.tab{all:unset;cursor:pointer;display:block;border-radius:12px;padding:14px 18px;border:2px solid transparent}
+.tab .n{font-size:40px;font-weight:700;line-height:1}
+.tab .l{font-weight:700;margin-top:6px}
+.tab .d{font-size:15px}
+.tab.red{background:var(--red-bg);color:var(--red)}
+.tab.amber{background:var(--amber-bg);color:var(--amber)}
+.tab.blue{background:var(--blue-bg);color:var(--blue)}
+.tab.ok{background:var(--ok-bg);color:var(--ok)}
+.tab[aria-selected="true"]{border-color:currentColor}
+.tab:focus-visible{outline:3px solid var(--focus)}
+.listhead{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:8px 0 10px}
+.listhead h2{margin:0;font-size:24px}
+.listhead input[type=search]{font:inherit;padding:8px 12px;border:2px solid var(--line);border-radius:8px;background:var(--sheet);color:var(--ink);min-width:240px}
+.tablewrap{background:var(--sheet);border:1px solid var(--line);border-radius:12px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:760px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:15px;color:var(--soft);font-weight:700;white-space:nowrap;background:var(--sheet);position:sticky;top:0}
+td.num,th.num{text-align:right}
+td.send{font-size:22px;font-weight:700;text-align:right;white-space:nowrap}
+tr.done td{opacity:.45}
+tr.done td.chk{opacity:1}
+.prod{font-weight:700}
+.sku{color:var(--soft);font-size:14px}
+.why{font-size:15px;color:var(--soft)}
+.empty{padding:28px;text-align:center;color:var(--soft)}
+details.settings{margin-top:28px;background:var(--sheet);border:1px solid var(--line);border-radius:12px;padding:12px 18px}
+details.settings summary{font-weight:700;cursor:pointer}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:12px}
+label.f{display:flex;flex-direction:column;gap:4px;font-weight:700}
+label.f span{font-weight:400;color:var(--soft);font-size:15px}
+label.f input,label.f select{font:inherit;padding:8px 10px;border:2px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink)}
+.map{background:var(--sheet);border:2px solid var(--amber);border-radius:12px;padding:20px;margin-bottom:20px}
+.map h2{margin:0 0 6px;font-size:22px}
+.err{background:var(--red-bg);color:var(--red);border-radius:10px;padding:12px 16px;margin-bottom:16px;font-weight:700}
+input[type=checkbox]{width:22px;height:22px;accent-color:var(--ok)}
+.hidden{display:none !important}
+@media print{
+  body{background:#fff;color:#000;font-size:12pt}
+  header.top button,.bar button,.summary,.listhead input,details.settings,.drop,.howto,.note{display:none !important}
+  .tablewrap{border:none}
+  th{position:static}
+}
+@media (max-width:640px){
+  header.top h1{font-size:24px}
+  .tab .n{font-size:32px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div>
+    <h1>Bestands-Check</h1>
+    <p>Was heute zu Amazon muss – und was zu lange liegt</p>
+  </div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <button id="btnPrint" class="hidden" type="button">Liste drucken</button>
+    <button id="btnNew" class="hidden" type="button">Neue Datei laden</button>
+  </div>
+</header>
+
+<div id="error" class="err hidden" role="alert"></div>
+
+<section id="start">
+  <div class="drop" id="drop">
+    <h2>Bestandsbericht hier ablegen</h2>
+    <p>Ziehen Sie die Datei aus Seller Central hierher oder wählen Sie sie aus. Die Datei wird nur in diesem Browser gelesen und nirgendwohin gesendet.</p>
+    <button class="primary" type="button" id="btnPick">Datei auswählen</button>
+    <input type="file" id="file" accept=".txt,.csv,.tsv,text/plain,text/csv" class="hidden">
+  </div>
+  <div class="howto">
+    <div><b>1. Bericht holen</b><span>Seller Central → Lagerbestand → Amazon Lagerbestand verwalten → „Lagerbestandsbericht“ herunterladen.</span></div>
+    <div><b>2. Datei ablegen</b><span>Die heruntergeladene Datei (.txt oder .csv) hier hineinziehen.</span></div>
+    <div><b>3. Listen abarbeiten</b><span>Rot heute senden, Gelb diese Woche einplanen, Blau nicht nachschicken.</span></div>
+  </div>
+  <p class="note">Tipp: Einmal am Morgen reicht. Erledigte Zeilen können Sie abhaken – das merkt sich dieser Browser für die geladene Datei.</p>
+</section>
+
+<section id="mapping" class="map hidden">
+  <h2>Einige Spalten wurden nicht erkannt</h2>
+  <p>Bitte ordnen Sie zu, welche Spalte der Datei was enthält. Die Auswahl wird für das nächste Mal gespeichert.</p>
+  <div class="grid3" id="mapFields"></div>
+  <p style="margin-top:16px"><button class="primary" type="button" id="btnMap">Zuordnung übernehmen</button></p>
+</section>
+
+<section id="result" class="hidden">
+  <div class="bar"><div class="meta" id="meta"></div></div>
+  <div class="summary" role="tablist" aria-label="Listen">
+    <button class="tab red" role="tab" data-k="red" aria-selected="true"><div class="n" id="nRed">0</div><div class="l">Heute senden</div><div class="d" id="dRed"></div></button>
+    <button class="tab amber" role="tab" data-k="amber" aria-selected="false"><div class="n" id="nAmber">0</div><div class="l">Diese Woche einplanen</div><div class="d" id="dAmber"></div></button>
+    <button class="tab blue" role="tab" data-k="blue" aria-selected="false"><div class="n" id="nBlue">0</div><div class="l">Zu viel – nicht nachschicken</div><div class="d">liegt zu lange oder Überbestand</div></button>
+    <button class="tab ok" role="tab" data-k="ok" aria-selected="false"><div class="n" id="nOk">0</div><div class="l">Alles in Ordnung</div><div class="d">nichts zu tun</div></button>
+  </div>
+  <div class="listhead">
+    <h2 id="listTitle">Heute senden</h2>
+    <input type="search" id="q" placeholder="Artikel oder SKU suchen" aria-label="Artikel oder SKU suchen">
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead id="thead"></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <details class="settings">
+    <summary>Einstellungen</summary>
+    <div class="grid3">
+      <label class="f">Rot unter … Tagen<span>Reichweite inkl. unterwegs</span><input type="number" min="1" id="sRed"></label>
+      <label class="f">Gelb unter … Tagen<span>Reichweite inkl. unterwegs</span><input type="number" min="1" id="sAmber"></label>
+      <label class="f">Nachschicken für … Tage<span>Ziel-Reichweite für die Menge</span><input type="number" min="1" id="sTarget"></label>
+      <label class="f">Zu alt ab … Tagen<span>Bestand im Lager seit</span><select id="sAge"><option value="181">181 Tagen</option><option value="271">271 Tagen</option><option value="365">365 Tagen</option></select></label>
+    </div>
+    <p class="note">Die Reichweite rechnet mit den Verkäufen der letzten 30 Tage (fehlen sie: 90 Tage). Nur aktive Bestände bei Versand durch Amazon.</p>
+  </details>
+</section>
+</div>
+
+<script>
+(() => {
+"use strict";
+const $ = id => document.getElementById(id);
+const store = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+const settings = Object.assign({red:14, amber:30, target:42, age:181}, store.get("bc.settings", {}));
+
+// Column names: Amazon reports (English and German variants)
+const FIELDS = {
+  sku:      {label:"SKU", req:true, keys:["sku","merchantsku","sellersku","handlersku","hndlersku"]},
+  name:     {label:"Artikelname", req:false, keys:["productname","produktname","itemname","title","titel","artikelname","name"]},
+  asin:     {label:"ASIN", req:false, keys:["asin"]},
+  avail:    {label:"Verfügbar", req:true, keys:["available","afnfulfillablequantity","fulfillablequantity","verfugbar","verfuegbar","verfgbar","availablequantity"]},
+  inbound:  {label:"Unterwegs (eingehend)", req:false, keys:["inboundquantity","eingehend","eingehendemenge"]},
+  inWork:   {label:"", req:false, keys:["inboundworking","afninboundworkingquantity"]},
+  inShip:   {label:"", req:false, keys:["inboundshipped","afninboundshippedquantity"]},
+  inRecv:   {label:"", req:false, keys:["inboundreceived","afninboundreceivingquantity"]},
+  transfer: {label:"", req:false, keys:["fctransfer","reservedfctransfers","reservedfctransfer","reservedfctransferquantity"]},
+  t30:      {label:"Verkauft 30 Tage", req:false, keys:["unitsshippedt30","unitsshippedlast30days","verkaufteeinheiten30tage","versandteeinheiten30tage"]},
+  t90:      {label:"Verkauft 90 Tage", req:false, keys:["unitsshippedt90","unitsshippedlast90days","verkaufteeinheiten90tage","versandteeinheiten90tage"]},
+  t7:       {label:"", req:false, keys:["unitsshippedt7","unitsshippedlast7days"]},
+  excess:   {label:"Überbestand", req:false, keys:["estimatedexcessquantity","geschatzteruberbestand","uberbestand"]},
+  cond:     {label:"", req:false, keys:["condition","zustand"]},
+  action:   {label:"", req:false, keys:["recommendedaction","empfohlenemanahme","empfohlenemassnahme"]}
+};
+// age columns: start day read from the header, e.g. inv-age-181-to-270-days
+const AGE_RE = /^invage(\d+)(?:to(\d+)|plus)/;
+
+const norm = s => String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/ß/g,"ss").replace(/[^a-z0-9]/g,"");
+
+function parseNum(v){
+  if (v === undefined || v === null) return 0;
+  let s = String(v).trim();
+  if (!s || s === "--" || s === "-") return 0;
+  if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s = s.replace(/\./g,"").replace(",",".");
+  else if (/^-?\d+,\d+$/.test(s)) s = s.replace(",",".");
+  else s = s.replace(/,/g,"");
+  const n = parseFloat(s);
+  return isFinite(n) ? n : 0;
+}
+
+function splitLine(line, d){
+  if (d === "\t") return line.split("\t");
+  const out = []; let cur = "", q = false;
+  for (let i = 0; i < line.length; i++){
+    const c = line[i];
+    if (q){ if (c === '"'){ if (line[i+1] === '"'){ cur += '"'; i++; } else q = false; } else cur += c; }
+    else if (c === '"') q = true;
+    else if (c === d){ out.push(cur); cur = ""; }
+    else cur += c;
+  }
+  out.push(cur); return out;
+}
+
+function parseText(text){
+  text = text.replace(/^﻿/,"");
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== "");
+  if (lines.length < 2) throw new Error("Die Datei enthält keine Zeilen mit Artikeln.");
+  const first = lines[0];
+  const counts = {"\t":(first.match(/\t/g)||[]).length, ";":(first.match(/;/g)||[]).length, ",":(first.match(/,/g)||[]).length};
+  const d = Object.keys(counts).sort((a,b)=>counts[b]-counts[a])[0];
+  const head = splitLine(first, d).map(h => h.trim());
+  const rows = lines.slice(1).map(l => splitLine(l, d));
+  return {head, rows};
+}
+
+function autoMap(head){
+  const saved = store.get("bc.map", {});
+  const n = head.map(norm);
+  const map = {};
+  for (const [k, f] of Object.entries(FIELDS)){
+    if (saved[k] && head.includes(saved[k])) { map[k] = head.indexOf(saved[k]); continue; }
+    let idx = -1;
+    for (const key of f.keys){ idx = n.indexOf(key); if (idx >= 0) break; }
+    if (idx < 0) for (const key of f.keys){ idx = n.findIndex(h => key.length > 4 && h.startsWith(key)); if (idx >= 0) break; }
+    if (idx >= 0) map[k] = idx;
+  }
+  // Amazon liefert überlappende Altersspalten (z. B. 181-270 und 181-330):
+  // nur Spalten ohne Überschneidung verwenden, sonst wird doppelt gezählt
+  const cand = [];
+  n.forEach((h, i) => { const mm = h.match(AGE_RE); if (mm) cand.push({i, from:+mm[1], to: mm[2] ? +mm[2] : Infinity}); });
+  cand.sort((a,b) => a.from - b.from || a.to - b.to);
+  const age = []; let end = -1;
+  for (const c of cand){ if (c.from > end){ age.push(c); end = c.to; } }
+  map.age = age;
+  return map;
+}
+
+let data = null, mapping = null, current = "red", fileKey = "";
+
+function build(){
+  const {head, rows} = data, m = mapping;
+  const g = (r, k) => m[k] === undefined ? undefined : r[m[k]];
+  const items = [];
+  for (const r of rows){
+    const sku = (g(r,"sku")||"").trim();
+    if (!sku) continue;
+    const cond = (g(r,"cond")||"").toLowerCase();
+    if (cond && !/new|neu/.test(cond)) continue;
+    const avail = parseNum(g(r,"avail"));
+    let inbound = m.inbound !== undefined ? parseNum(g(r,"inbound")) : parseNum(g(r,"inWork")) + parseNum(g(r,"inShip")) + parseNum(g(r,"inRecv"));
+    inbound += parseNum(g(r,"transfer")); // Umlagerung zwischen Amazon-Lagern zählt als unterwegs
+    const t30 = parseNum(g(r,"t30")), t90 = parseNum(g(r,"t90")), t7 = parseNum(g(r,"t7"));
+    let rate = 0, basis = "";
+    if (m.t30 !== undefined){ rate = t30/30; basis = "30 Tagen"; }
+    else if (m.t90 !== undefined){ rate = t90/90; basis = "90 Tagen"; }
+    else if (m.t7 !== undefined){ rate = t7/7; basis = "7 Tagen"; }
+    const old = m.age.filter(a => a.from >= settings.age).reduce((s,a)=> s + parseNum(r[a.i]), 0);
+    const excess = parseNum(g(r,"excess"));
+    const total = avail + inbound;
+    const daysTotal = rate > 0 ? total / rate : Infinity;
+    const daysAvail = rate > 0 ? avail / rate : Infinity;
+    let status = "ok", why = "";
+    if (rate > 0 && daysTotal < settings.red){ status = "red"; why = `reicht ${fmtDays(daysTotal)}`; }
+    else if (rate > 0 && daysTotal < settings.amber){ status = "amber"; why = `reicht ${fmtDays(daysTotal)}`; }
+    else if (total > 0 && (old > 0 || excess > 0 || (rate === 0 && avail > 0))){
+      status = "blue";
+      const p = [];
+      if (old > 0) p.push(`${fmt(old)} Stück älter als ${settings.age - 1} Tage`);
+      if (excess > 0) p.push(`${fmt(excess)} Überbestand laut Amazon`);
+      if (rate === 0) p.push("kein Verkauf im Zeitraum");
+      else p.push(`reicht ${fmtDays(daysTotal)}`);
+      why = p.join(" · ");
+    } else if (rate > 0) why = `reicht ${fmtDays(daysTotal)}`;
+    const send = rate > 0 ? Math.max(0, Math.ceil(rate * settings.target - total)) : 0;
+    if (status === "amber" && send === 0) status = "ok";
+    items.push({sku, name:(g(r,"name")||"").trim(), asin:(g(r,"asin")||"").trim(), avail, inbound, rate, basis, old, excess, daysTotal, daysAvail, status, why, send});
+  }
+  return items;
+}
+
+const fmt = n => Math.round(n).toLocaleString("de-DE");
+function fmtDays(d){
+  if (!isFinite(d)) return "unbegrenzt";
+  if (d < 1) return "unter 1 Tag";
+  if (d < 60) return `${Math.round(d)} Tage`;
+  if (d < 730) return `ca. ${Math.round(d/30.4)} Monate`;
+  return `über ${Math.floor(d/365)} Jahre`;
+}
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+let items = [];
+function render(){
+  items = build();
+  const by = k => items.filter(i => i.status === k);
+  $("nRed").textContent = by("red").length;
+  $("nAmber").textContent = by("amber").length;
+  $("nBlue").textContent = by("blue").length;
+  $("nOk").textContent = by("ok").length;
+  $("dRed").textContent = `reicht unter ${settings.red} Tagen`;
+  $("dAmber").textContent = `reicht unter ${settings.amber} Tagen`;
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", String(t.dataset.k === current)));
+  const titles = {red:"Heute senden", amber:"Diese Woche einplanen", blue:"Zu viel – nicht nachschicken", ok:"Alles in Ordnung"};
+  $("listTitle").textContent = titles[current];
+  const q = norm($("q").value);
+  let list = by(current).filter(i => !q || norm(i.sku + i.name + i.asin).includes(q));
+  if (current === "red" || current === "amber") list.sort((a,b) => a.daysTotal - b.daysTotal);
+  else if (current === "blue") list.sort((a,b) => (b.old + b.excess) - (a.old + a.excess) || b.avail - a.avail);
+  else list.sort((a,b) => a.sku.localeCompare(b.sku));
+  const done = store.get("bc.done." + fileKey, {});
+  const sendCols = current === "red" || current === "amber";
+  $("thead").innerHTML = `<tr>${sendCols ? '<th><span class="hidden">Erledigt</span>✓</th>' : ""}<th>Artikel</th><th class="num">Verfügbar</th><th class="num">Unterwegs</th><th class="num">Verkauf pro Tag</th><th>${current === "blue" ? "Warum" : "Reicht für"}</th>${sendCols ? '<th class="num">Nachschicken</th>' : ""}</tr>`;
+  if (!list.length){
+    const msg = {red:"Heute muss nichts dringend zu Amazon.", amber:"Diese Woche ist nichts zusätzlich einzuplanen.", blue:"Kein Artikel liegt zu lange.", ok:"Keine Artikel in dieser Liste."}[current];
+    $("tbody").innerHTML = `<tr><td class="empty" colspan="7">${q ? "Kein Treffer für die Suche." : msg}</td></tr>`;
+    return;
+  }
+  $("tbody").innerHTML = list.map(i => {
+    const isDone = !!done[i.sku];
+    return `<tr class="${isDone ? "done" : ""}">
+      ${sendCols ? `<td class="chk"><input type="checkbox" data-sku="${esc(i.sku)}" ${isDone ? "checked" : ""} aria-label="${esc(i.sku)} erledigt"></td>` : ""}
+      <td><div class="prod">${esc(i.name || i.sku)}</div><div class="sku">${esc(i.sku)}${i.asin ? " · " + esc(i.asin) : ""}</div></td>
+      <td class="num">${fmt(i.avail)}</td>
+      <td class="num">${i.inbound ? fmt(i.inbound) : "–"}</td>
+      <td class="num">${i.rate ? (i.rate < 0.1 ? "unter 0,1" : i.rate.toLocaleString("de-DE",{maximumFractionDigits:1})) : "–"}</td>
+      <td class="why">${esc(i.why || fmtDays(i.daysTotal))}</td>
+      ${sendCols ? `<td class="send">${i.send ? fmt(i.send) : "–"}</td>` : ""}
+    </tr>`;
+  }).join("");
+}
+
+function showMeta(name){
+  const rate = items.find(i => i.basis) || {};
+  $("meta").textContent = `${name} · ${items.length} Artikel · Verkauf pro Tag aus den letzten ${rate.basis || "–"} · Nachschicken reicht für ${settings.target} Tage`;
+}
+
+function missingRequired(m){ return Object.entries(FIELDS).filter(([k,f]) => f.req && m[k] === undefined).map(([k]) => k); }
+
+function showMapping(){
+  const head = data.head;
+  const fields = ["sku","name","avail","inbound","t30","t90","excess"];
+  $("mapFields").innerHTML = fields.map(k => `<label class="f">${FIELDS[k].label}${FIELDS[k].req ? " *" : ""}<select data-k="${k}"><option value="">– nicht vorhanden –</option>${head.map((h,i)=>`<option value="${i}" ${mapping[k]===i?"selected":""}>${esc(h)}</option>`).join("")}</select></label>`).join("");
+  $("mapping").classList.remove("hidden");
+}
+
+function error(msg){ const e = $("error"); e.textContent = msg; e.classList.toggle("hidden", !msg); }
+
+let fileName = "";
+function load(text, name){
+  error("");
+  try{ data = parseText(text); }
+  catch(e){ error(e.message); return; }
+  fileName = name;
+  fileKey = name + "|" + text.length;
+  mapping = autoMap(data.head);
+  if (missingRequired(mapping).length || (mapping.t30 === undefined && mapping.t90 === undefined && mapping.t7 === undefined)){
+    $("start").classList.add("hidden"); showMapping(); return;
+  }
+  show();
+}
+function show(){
+  $("mapping").classList.add("hidden");
+  $("start").classList.add("hidden");
+  $("result").classList.remove("hidden");
+  $("btnNew").classList.remove("hidden");
+  $("btnPrint").classList.remove("hidden");
+  current = "red";
+  render(); showMeta(fileName);
+  if (!items.length) error("In der Datei wurden keine Artikel gefunden. Ist es der Lagerbestandsbericht aus „Amazon Lagerbestand verwalten“?");
+}
+
+function readFile(f){
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    let t = r.result;
+    if (t.includes("�")){ const r2 = new FileReader(); r2.onload = () => load(r2.result, f.name); r2.readAsText(f, "windows-1252"); return; }
+    load(t, f.name);
+  };
+  r.onerror = () => error("Die Datei konnte nicht gelesen werden.");
+  r.readAsText(f, "utf-8");
+}
+
+$("btnPick").addEventListener("click", () => $("file").click());
+$("file").addEventListener("change", e => readFile(e.target.files[0]));
+const drop = $("drop");
+["dragenter","dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave","drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", e => readFile(e.dataTransfer.files[0]));
+document.addEventListener("dragover", e => e.preventDefault());
+document.addEventListener("drop", e => { e.preventDefault(); if (!$("result").classList.contains("hidden") || !$("mapping").classList.contains("hidden")) readFile(e.dataTransfer.files[0]); });
+
+$("btnMap").addEventListener("click", () => {
+  const saved = {};
+  document.querySelectorAll("#mapFields select").forEach(s => {
+    const k = s.dataset.k;
+    if (s.value === "") delete mapping[k]; else { mapping[k] = +s.value; saved[k] = data.head[+s.value]; }
+  });
+  const miss = missingRequired(mapping);
+  if (miss.length){ error("Bitte mindestens SKU und Verfügbar zuordnen."); return; }
+  if (mapping.t30 === undefined && mapping.t90 === undefined){ error("Bitte „Verkauft 30 Tage“ oder „Verkauft 90 Tage“ zuordnen."); return; }
+  error(""); store.set("bc.map", Object.assign(store.get("bc.map", {}), saved)); show();
+});
+$("btnNew").addEventListener("click", () => { $("result").classList.add("hidden"); $("start").classList.remove("hidden"); $("btnNew").classList.add("hidden"); $("btnPrint").classList.add("hidden"); $("file").value = ""; error(""); });
+$("btnPrint").addEventListener("click", () => window.print());
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => { current = t.dataset.k; render(); }));
+$("q").addEventListener("input", render);
+$("tbody").addEventListener("change", e => {
+  const c = e.target.closest("input[type=checkbox]"); if (!c) return;
+  const done = store.get("bc.done." + fileKey, {});
+  if (c.checked) done[c.dataset.sku] = 1; else delete done[c.dataset.sku];
+  store.set("bc.done." + fileKey, done);
+  c.closest("tr").classList.toggle("done", c.checked);
+});
+for (const [id, k] of [["sRed","red"],["sAmber","amber"],["sTarget","target"],["sAge","age"]]){
+  const el = $(id); el.value = settings[k];
+  el.addEventListener("change", () => { const v = parseInt(el.value, 10); if (v > 0){ settings[k] = v; store.set("bc.settings", settings); if (data && !$("result").classList.contains("hidden")){ render(); showMeta(fileName); } } });
+}
+})();
+</script>
+</body>
+</html>
